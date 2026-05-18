@@ -38,11 +38,13 @@ def evaluate_model(
             prediction = predictor.decode(output)
             pred_boxes.append(prediction.boxes)
             pred_scores.append(prediction.scores)
-            if raw.numel() == 0: target_boxes.append(torch.zeros((0, 4), dtype=torch.float32))
-            else: target_boxes.append(xywh_to_xyxy(raw[:, 1:5]))
+            if raw.numel() == 0:
+                target_boxes.append(torch.zeros((0, 4), dtype=torch.float32))
+            else:
+                target_boxes.append(xywh_to_xyxy(raw[:, 1:5]))
 
     result: dict[str, float] = {}
-    thresholds = eval_config.get("map_iou_threshold", [0.5, 0.7, 0.9])
+    thresholds = eval_config.get("map_iou_thresholds", [0.5, 0.7, 0.9])
     for threshold in thresholds:
         # calculate precision, recall, and mAP@threhold
         pr = precision_recall_ap(pred_boxes, pred_scores, target_boxes, float(threshold))
@@ -50,8 +52,10 @@ def evaluate_model(
         result[f"map_{key}"] = float(pr["ap"])
     
     # calculate mAP@50-95
-    coco_thresholds =[round(0.5 + 0.05 * index, 2) for index in range(10)]
-    coco_aps = [float(precision_recall_ap(pred_boxes, pred_scores, target_boxes,threshold)["ap"] for threshold in coco_thresholds)]
+    coco_thresholds = [round(0.5 + 0.05 * index, 2) for index in range(10)]
+    coco_aps = [
+        float(precision_recall_ap(pred_boxes, pred_scores, target_boxes, threshold)["ap"])
+        for threshold in coco_thresholds
+    ]
     result["map_50_95"] = sum(coco_aps) / len(coco_aps)
     return result
-

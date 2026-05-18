@@ -13,11 +13,14 @@ from __future__ import annotations
 
 import argparse
 import shutil
+import sys
 from pathlib import Path
 
 from PIL import Image
 
-from yolo.datasets.converters import write_yolo_labels, xyxy_pixels_to_yolo_line
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from datasets.converters import write_yolo_labels, xyxy_pixels_to_yolo_line
 
 
 def parse_args() -> argparse.Namespace:

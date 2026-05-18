@@ -1,15 +1,19 @@
 from __future__ import annotations
 
 import argparse
+import sys
+from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader
 
-from yolo.datasets.face_dataset import FaceDetectionDataset, detection_collate
-from yolo.engine.evaluator import evaluate_model
-from yolo.models import YOLOv1
-from yolo.utils.checkpoint import load_checkpoint
-from yolo.utils.config import load_config
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from datasets.face_dataset import FaceDetectionDataset, detection_collate
+from engine.evaluator import evaluate_model
+from models import YOLOv1
+from utils.checkpoint import load_checkpoint
+from utils.config import load_config
 
 
 def parse_args() -> argparse.Namespace:

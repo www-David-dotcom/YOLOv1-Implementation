@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import sys
+from pathlib import Path
 
-from yolo.utils.visualization import plot_training_history
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from utils.visualization import plot_training_history
 
 
 def parse_args() -> argparse.Namespace:

@@ -74,5 +74,7 @@ def train_model(
             
             print(
                 f"epoch={epoch} loss={train_loss: .4f} "
-                f"mAP@0.5={row["map_50"]:.5f}, maAP@0.7={row["map_70"]:.4f}, mAP@0.9={row["map_90"]:.4f}"
+                f"mAP@0.5={row['map_50']:.5f}, "
+                f"mAP@0.7={row['map_70']:.4f}, "
+                f"mAP@0.9={row['map_90']:.4f}"
             )

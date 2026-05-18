@@ -23,10 +23,10 @@ class YOLOPredictor:
             conf_threshold: float = 0.2,
             nms_iou_threshold: float = 0.5,
             device: torch.device | None = None,
-    ) -> None:
+        ) -> None:
         self.model = model
         self.image_size = image_size
-        self.grid_size - grid_size
+        self.grid_size = grid_size
         self.boxes_per_cell = boxes_per_cell
         self.num_classes = num_classes
         self.conf_threshold = conf_threshold
@@ -40,7 +40,7 @@ class YOLOPredictor:
         image = image.convert("RGB")
         image = F.resize(image, [self.image_size, self.image_size])
         tensor = F.to_tensor(image)
-        return F.normalize(tensor, mean=[0.485, 0.456, 0.456], std=[0.229, 0.224, 0.225])
+        return F.normalize(tensor, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     
     @torch.no_grad()
     def predict_image(self, image: Image.Image) -> Prediction:
@@ -94,8 +94,10 @@ class YOLOPredictor:
             keep = nms(boxes_flat[class_mask], scores_flat[class_mask], self.nms_iou_threshold)
             keep_all.append(class_indices[keep])
         # turn the nms indices to a torch tensor
-        if keep_all: keep_indices = torch.cat(keep_all)
-        else: keep_indices = torch.empty((0,), dtype=torch.long)
+        if keep_all:
+            keep_indices = torch.cat(keep_all)
+        else:
+            keep_indices = torch.empty((0,), dtype=torch.long)
 
         return Prediction(
             boxes=boxes_flat[keep_indices],

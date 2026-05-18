@@ -1,4 +1,4 @@
-from __future__ import annocations
+from __future__ import annotations
 import torch
 from utils.boxes import box_iou_xyxy
 
@@ -54,7 +54,8 @@ def precision_recall_ap(
         # create a boolean tensor to mark if every target is successfully matched
         matched = torch.zeros((targets.shape[0],), dtype=torch.bool, device=targets.device)
 
-        if boxes.numel() == 0: continue
+        if boxes.numel() == 0:
+            continue
 
         # sort from high score to low score
         order = scores.argsort(descending=True)
@@ -77,28 +78,28 @@ def precision_recall_ap(
                 # else this prediction is FP
                 records.append((score, 0, 1))
 
-        if total_targets == 0:
-            return {"precision": 0.0, "recall": 0.0, "ap": 0.0, "precisions": [], "recalls": []}
-        
-        records.sort(key=lambda item: item[0], reverse=True)
-        tp = torch.tensor([item[1] for item in records], dtype=torch.float32)
-        fp = torch.tensor([item[2] for item in records], dtype=torch.float32)
+    if total_targets == 0:
+        return {"precision": 0.0, "recall": 0.0, "ap": 0.0, "precisions": [], "recalls": []}
 
-        if tp.numel() == 0:
-            return {"precision": 0.0, "recall": 0.0, "ap": 0.0, "precisions": [], "recalls": []}
-        
-        # cumsum menas add according to some dimension to get a lower-dimension tensor
-        # add the boolean variables to get the total TP and FP num
-        cum_tp = torch.cumsum(tp, dim=0)
-        cum_fp = torch.cumsum(fp, dim=0)
-        recalls = cum_tp / max(total_targets, 1)
-        precisions = cum_tp / (cum_tp + cum_fp).clamp(min=1e-8)
-        ap = interpolated_average_precision(precisions, recalls)
-        
-        return{
-            "precision": float(precisions[-1].item()),
-            "recall": float(recalls[-1].item()),
-            "ap": float(ap),
-            "precisions": [float(x) for x in precisions.tolist()],
-            "recalls": [float(x) for x in recalls.tolist()],
-        }
+    records.sort(key=lambda item: item[0], reverse=True)
+    tp = torch.tensor([item[1] for item in records], dtype=torch.float32)
+    fp = torch.tensor([item[2] for item in records], dtype=torch.float32)
+
+    if tp.numel() == 0:
+        return {"precision": 0.0, "recall": 0.0, "ap": 0.0, "precisions": [], "recalls": []}
+
+    # cumsum menas add according to some dimension to get a lower-dimension tensor
+    # add the boolean variables to get the total TP and FP num
+    cum_tp = torch.cumsum(tp, dim=0)
+    cum_fp = torch.cumsum(fp, dim=0)
+    recalls = cum_tp / max(total_targets, 1)
+    precisions = cum_tp / (cum_tp + cum_fp).clamp(min=1e-8)
+    ap = interpolated_average_precision(precisions, recalls)
+
+    return{
+        "precision": float(precisions[-1].item()),
+        "recall": float(recalls[-1].item()),
+        "ap": float(ap),
+        "precisions": [float(x) for x in precisions.tolist()],
+        "recalls": [float(x) for x in recalls.tolist()],
+    }

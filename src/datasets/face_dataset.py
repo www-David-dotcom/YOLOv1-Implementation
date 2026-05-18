@@ -5,7 +5,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from datasets.transforms import YOLOTransform
 
-IMAGE_EXTENSIONS = {",jpg", ".jpeg", ".png", ".bmp"}
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 
 def detection_collate(batch):
     images, targets, raw_boxes = zip(*batch, strict=True)
@@ -29,22 +29,29 @@ class FaceDetectionDataset(Dataset):
         self.num_classes = num_classes
         self.transform = YOLOTransform(image_size=image_size, train=train)
         # rglob is recursive matching in directory hierachy of paths
-        self.image_paths = sorted(path for path in self.image_dir.rglob('*') if path.suffix.lower() in IMAGE_EXTENSIONS)
-        if not self.image_paths: raise FileNotFoundError(f"No images found in {self.image_dir}")
+        self.image_paths = sorted(
+            path for path in self.image_dir.rglob("*") if path.suffix.lower() in IMAGE_EXTENSIONS
+        )
+        if not self.image_paths:
+            raise FileNotFoundError(f"No images found in {self.image_dir}")
 
-    def __len__(self) -> int: return len(self.image_paths)
+    def __len__(self) -> int:
+        return len(self.image_paths)
 
     def _read_labels(self, label_path: Path) -> torch.Tensor:
-        if not label_path.exists(): return torch.zeros((0, 5), dtype=torch.float32)
+        if not label_path.exists():
+            return torch.zeros((0, 5), dtype=torch.float32)
 
         rows: list[list[float]] = []
         with label_path.open("r", encoding="utf-8") as file:
             for line in file:
                 stripped = line.strip()
-                if not stripped: continue
+                if not stripped:
+                    continue
                 values = [float(value) for value in stripped.split()]
                 # one values line is (class, x, y, w, h)
-                if len(values) != 5: raise ValueError(f"Invalid label line in {label_path}: {line}")
+                if len(values) != 5:
+                    raise ValueError(f"Invalid label line in {label_path}: {line}")
                 rows.append(values)
         if not rows:
             return torch.zeros((0, 5), dtype=torch.float32)
@@ -68,7 +75,8 @@ class FaceDetectionDataset(Dataset):
             local_y = y * s - cell_y
 
             # if there're already 5 targets in this cell, then we do not add more
-            if target[cell_y, cell_x, 4] == 1: continue
+            if target[cell_y, cell_x, 4] == 1:
+                continue
 
             for box_index in range(b):
                 # each box takes 5 places (x, y, w, h, score)

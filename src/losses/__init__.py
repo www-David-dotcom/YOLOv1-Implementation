@@ -1,3 +1,3 @@
-from losses.yolo_v1_loss import Yolov1Loss
+from losses.yolo_v1_loss import YOLOv1Loss
 
-__all__ = ["Yolov1Loss"]
+__all__ = ["YOLOv1Loss"]

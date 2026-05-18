@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import cv2
 import torch
 from PIL import Image
 
-from yolo.inference import YOLOPredictor
-from yolo.models import YOLOv1
-from yolo.utils.checkpoint import load_checkpoint
-from yolo.utils.config import load_config
-from yolo.utils.visualization import draw_boxes
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+
+from inference import YOLOPredictor
+from models import YOLOv1
+from utils.checkpoint import load_checkpoint
+from utils.config import load_config
+from utils.visualization import draw_boxes
 
 
 def parse_args() -> argparse.Namespace:

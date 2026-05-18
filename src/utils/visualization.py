@@ -17,7 +17,7 @@ def draw_boxes(
         # these x and y are proportions (in [0, 1])
         x1, y1, x2, y2 = box.tolist()
         # upper-left of the ractangle
-        p1 = (int(x1 * width, int(y1 * height)))
+        p1 = (int(x1 * width), int(y1 * height))
         # bottom-right of hte rectangle
         p2 = (int(x2 * width), int(y2 * height))
         cv2.rectangle(output, p1, p2, color, 2)
@@ -38,7 +38,7 @@ def plot_training_history(csv_path: str | Path, output_path: str | Path) -> None
         for row in reader:
             epochs.append(int(row["epoch"]))
             losses.append(float(row["train_loss"]))
-            val_maps.append(float(row["map_59"]))
+            val_maps.append(float(row["map_50"]))
     
     plt.figure(figsize=(8, 4))
     plt.plot(epochs, losses, label="train loss")
@@ -50,4 +50,3 @@ def plot_training_history(csv_path: str | Path, output_path: str | Path) -> None
     output_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(output_path, dpi=200)
     plt.close()
-

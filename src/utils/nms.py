@@ -7,7 +7,8 @@ def nms(boxes: torch.Tensor, scores: torch.Tensor, iou_threshold: float) -> torc
     nms: only keeping the largest-score boxes among a set of boxes with much intersection (iou above threshold) 
     """
     # detect if it's empty
-    if boxes.numel() == 0: return torch.empty((0,), dtype=torch.long, device=boxes.device)
+    if boxes.numel() == 0:
+        return torch.empty((0,), dtype=torch.long, device=boxes.device)
 
     # argsort means the returned tensor is the INDEX of the numbers according to the order
     order = scores.argsort(descending=True)
@@ -16,7 +17,8 @@ def nms(boxes: torch.Tensor, scores: torch.Tensor, iou_threshold: float) -> torc
     while order.numel() > 0:
         current = order[0]
         keep.append(current)
-        if order.numel() == 1: break
+        if order.numel() == 1:
+            break
 
         #unsqueeze(0) means append a dimension at front. We need this to turn a (4) tensor to a (1, 4) tensor to go into IOU function
         #squeeze(0) means squeeze out that dimension
