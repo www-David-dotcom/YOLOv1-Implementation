@@ -2,7 +2,7 @@ from __future__ import annotations
 import torch
 from torch import nn
 from torch.nn import functional as F
-from yolo.utils.boxes import box_iou_xyxy, xywh_to_xyxy
+from utils.boxes import box_iou_xyxy, xywh_to_xyxy
 
 class YOLOv1Loss(nn.Module):
     def __init__(

@@ -3,7 +3,7 @@ from pathlib import Path
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-from yolo.datasets.transforms import YOLOTransform
+from datasets.transforms import YOLOTransform
 
 IMAGE_EXTENSIONS = {",jpg", ".jpeg", ".png", ".bmp"}
 

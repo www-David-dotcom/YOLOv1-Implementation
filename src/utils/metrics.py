@@ -1,6 +1,6 @@
 from __future__ import annocations
 import torch
-from yolo.utils.boxes import box_iou_xyxy
+from utils.boxes import box_iou_xyxy
 
 def interpolated_average_precision(precisions: torch.Tensor, recalls: torch.Tensor) -> float:
     """

@@ -1,8 +1,8 @@
 from __future__ import annotations
 import torch
 from torch import nn
-from yolo.models.backbone import TinyYOLOBackbone
-from yolo.models.head import YOLOv1HEAD
+from models.backbone import TinyYOLOBackbone
+from models.head import YOLOv1HEAD
 
 class YOLOv1(nn.Module):
     def __init__(

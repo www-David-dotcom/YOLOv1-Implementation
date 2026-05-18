@@ -1,6 +1,6 @@
 from __future__ import annotations
 import torch
-from yolo.utils.boxes import box_iou_xyxy
+from utils.boxes import box_iou_xyxy
 
 def nms(boxes: torch.Tensor, scores: torch.Tensor, iou_threshold: float) -> torch.Tensor:
     """
