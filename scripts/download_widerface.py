@@ -15,6 +15,12 @@ DEFAULT_FILES = (
     "WIDER_test.zip",
     "wider_face_split.zip",
 )
+EXTRACTED_DIRS = {
+    "WIDER_train.zip": "WIDER_train",
+    "WIDER_val.zip": "WIDER_val",
+    "WIDER_test.zip": "WIDER_test",
+    "wider_face_split.zip": "wider_face_split",
+}
 CHUNK_SIZE = 1024 * 1024
 
 
@@ -47,6 +53,10 @@ def parse_args() -> argparse.Namespace:
 
 def build_file_url(filename: str) -> str:
     return f"{DATA_DIR_URL}/{filename}"
+
+
+def extracted_dir_for(filename: str, output_dir: Path) -> Path:
+    return output_dir / EXTRACTED_DIRS.get(filename, Path(filename).stem)
 
 
 def download_file(url: str, target: Path, token: str | None = None, force: bool = False) -> Path:
@@ -84,6 +94,29 @@ def download_file(url: str, target: Path, token: str | None = None, force: bool 
     return target
 
 
+def ensure_archive(
+    filename: str,
+    output_dir: Path,
+    token: str | None = None,
+    force: bool = False,
+) -> Path | None:
+    archive = output_dir / filename
+    extracted_dir = extracted_dir_for(filename, output_dir)
+    if extracted_dir.is_dir() and not force:
+        if archive.exists():
+            archive.unlink()
+            print(f"removed existing archive {archive}; extracted directory already exists")
+        print(f"skip existing extracted directory {extracted_dir}")
+        return None
+
+    return download_file(
+        build_file_url(filename),
+        archive,
+        token=token,
+        force=force,
+    )
+
+
 def safe_extract_zip(archive: Path, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     destination_root = output_dir.resolve()
@@ -96,19 +129,28 @@ def safe_extract_zip(archive: Path, output_dir: Path) -> None:
     print(f"extracted {archive} -> {output_dir}")
 
 
+def extract_archive(archive: Path, output_dir: Path, delete_archive: bool = False) -> None:
+    safe_extract_zip(archive, output_dir)
+    if delete_archive:
+        archive.unlink()
+        print(f"removed archive {archive}")
+
+
 def main() -> None:
     args = parse_args()
     output_dir = Path(args.output_dir)
 
     for filename in DEFAULT_FILES:
-        archive = download_file(
-            build_file_url(filename),
-            output_dir / filename,
+        archive = ensure_archive(
+            filename,
+            output_dir,
             token=args.token,
             force=args.force,
         )
         if args.extract:
-            safe_extract_zip(archive, output_dir)
+            if archive is None:
+                continue
+            extract_archive(archive, output_dir, delete_archive=True)
 
 
 if __name__ == "__main__":
