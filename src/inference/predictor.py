@@ -58,7 +58,7 @@ class YOLOPredictor:
 
         # one box is (x, y, w, h, conf)
         xy = torch.sigmoid(boxes_raw[..., :2])
-        wh = boxes_raw[..., 2:4].clamp(min=0)
+        wh = torch.sigmoid(boxes_raw[..., 2:4])
         conf = torch.sigmoid(boxes_raw[..., 4])
 
         # y indices is ([0, 0 ,0, ...], [1, 1, 1, ...], [2, 2, 2, ...], ...)

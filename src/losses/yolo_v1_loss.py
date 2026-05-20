@@ -79,8 +79,8 @@ class YOLOv1Loss(nn.Module):
         pred_classes = predictions[..., self.boxes_per_cell * 5:]
         target_classes = targets[..., self.boxes_per_cell * 5:]
 
-        pred_xy = torch.sigmoid(pred_boxes[..., :2]) # use sigmoid to normalize it to (0, 1)
-        pred_wh = pred_boxes[..., 2:4].clamp(min=0)
+        pred_xy = torch.sigmoid(pred_boxes[..., :2])
+        pred_wh = torch.sigmoid(pred_boxes[..., 2:4])
         pred_conf = torch.sigmoid(pred_boxes[..., 4])
         target_xy = target_boxes[...,:2]
         target_wh = target_boxes[..., 2:4]

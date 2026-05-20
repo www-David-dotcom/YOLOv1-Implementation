@@ -21,17 +21,17 @@ class YOLOv1HEAD(nn.Module):
             nn.Conv2d(1024, 512, 3, padding=1, bias=False),
             nn.BatchNorm2d(512),
             nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(512, 512, 3, stride=2, padding=1, bias=False),
-            nn.BatchNorm2d(512),
-            nn.LeakyReLU(0.1, inplace=True),
             nn.Conv2d(512, 256, 3, padding=1, bias=False),
             nn.BatchNorm2d(256),
             nn.LeakyReLU(0.1, inplace=True),
-            nn.Conv2d(256, 256, 3, padding=1, bias=False),
-            nn.BatchNorm2d(256),
+            nn.Conv2d(256, 128, 3, padding=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Conv2d(128, 128, 3, padding=1, bias=False),
+            nn.BatchNorm2d(128),
             nn.LeakyReLU(0.1, inplace=True),
             nn.Dropout2d(dropout),
-            nn.Conv2d(256, output_channels, 1),
+            nn.Conv2d(128, output_channels, 1),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:

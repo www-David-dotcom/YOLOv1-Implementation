@@ -104,6 +104,15 @@ def main() -> None:
         weight_decay=train_config["weight_decay"],
     )
 
+    scheduler_config = train_config.get("lr_scheduler", {})
+    scheduler = None
+    if scheduler_config.get("type") == "cosine":
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=train_config["epochs"],
+            eta_min=scheduler_config.get("eta_min", 0),
+        )
+
     train_model(
         model=model,
         train_loader=train_loader,
@@ -115,6 +124,7 @@ def main() -> None:
         checkpoint_dir=train_config["checkpoint_dir"],
         log_path=train_config["log_path"],
         eval_config=config["eval"],
+        scheduler=scheduler,
     )
 
 

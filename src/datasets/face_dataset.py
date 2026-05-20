@@ -67,24 +67,25 @@ class FaceDetectionDataset(Dataset):
             class_id, x, y, w, h = row.tolist()
             x = min(max(x, 0.0), 0.999999)
             y = min(max(y, 0.0), 0.999999)
-            # cell index of an x or y
             cell_x = int(x * s)
             cell_y = int(y * s)
-            # the x and y (in (0, 1)) relative to the cell it's in
             local_x = x * s - cell_x
             local_y = y * s - cell_y
 
-            # if there're already 5 targets in this cell, then we do not add more
-            if target[cell_y, cell_x, 4] == 1:
+            # find the first empty box slot in this cell
+            filled = False
+            for box_index in range(b):
+                offset = box_index * 5
+                if target[cell_y, cell_x, offset + 4] == 0:
+                    target[cell_y, cell_x, offset:offset+5] = torch.tensor(
+                        [local_x, local_y, w, h, 1.0], dtype=torch.float32
+                    )
+                    filled = True
+                    break
+            if not filled:
+                # all B slots occupied, skip this box
                 continue
 
-            for box_index in range(b):
-                # each box takes 5 places (x, y, w, h, score)
-                offset = box_index * 5
-                target[cell_y, cell_x, offset:offset+5] = torch.tensor(
-                    [local_x, local_y, w, h, 1.0], dtype=torch.float32
-                )
-            # class offset starts after all boxes end (b * 5)
             class_offset = b * 5 + int(class_id)
             target[cell_y, cell_x, class_offset] = 1.0
 

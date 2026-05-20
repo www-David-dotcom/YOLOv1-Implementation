@@ -22,14 +22,32 @@ def train_one_epoch(
     for images, targets, _ in tqdm(loader, desc="train", leave=False):
         images = images.to(device)
         targets = targets.to(device)
-        # clear the old acuumulated gradients in the last epoch
-        optimizer.zero_grad(set_to_none=True) # set the grad to None instead of zero to save memory
+        optimizer.zero_grad(set_to_none=True)
         predictions = model(images)
         loss = loss_fn(predictions, targets)
         loss.backward()
         optimizer.step()
         total_loss += float(loss.item()) * images.shape[0]
     return total_loss / len(loader.dataset)
+
+
+@torch.no_grad()
+def validate_one_epoch(
+        model: torch.nn.Module,
+        loader: DataLoader,
+        val_loss_fn: torch.nn.Module,
+        device: torch.device,
+) -> float:
+    model.eval()
+    total_loss = 0.0
+    for images, targets, _ in tqdm(loader, desc="val", leave=False):
+        images = images.to(device)
+        targets = targets.to(device)
+        predictions = model(images)
+        loss = val_loss_fn(predictions, targets)
+        total_loss += float(loss.item()) * images.shape[0]
+    return total_loss / len(loader.dataset)
+
 
 def train_model(
         model: torch.nn.Module,
@@ -42,6 +60,7 @@ def train_model(
         checkpoint_dir: str | Path,
         log_path: str | Path,
         eval_config: dict,
+        scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
 ) -> None:
     checkpoint_dir = Path(checkpoint_dir)
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
@@ -50,31 +69,39 @@ def train_model(
     best_map = -1.0
 
     with log_path.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=["epoch", "train_loss", "map_50", "map_70", "map_90"])
+        writer = csv.DictWriter(file, fieldnames=["epoch", "train_loss", "val_loss", "map_50", "map_70", "map_90", "lr"])
         writer.writeheader()
 
         for epoch in range(1, epochs + 1):
             train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device)
+            val_loss = validate_one_epoch(model, val_loader, loss_fn, device)
             metrics = evaluate_model(model, val_loader, device, eval_config)
 
+            current_lr = optimizer.param_groups[0]["lr"]
             row = {
                 "epoch": epoch,
                 "train_loss": train_loss,
+                "val_loss": val_loss,
                 "map_50": metrics.get("map_50", 0.0),
                 "map_70": metrics.get("map_70", 0.0),
-                "map_90": metrics.get("map_90", 0.0)
+                "map_90": metrics.get("map_90", 0.0),
+                "lr": current_lr,
             }
             writer.writerow(row)
             file.flush()
 
+            if scheduler is not None:
+                scheduler.step()
+
             save_checkpoint(checkpoint_dir / "last.pt", model, optimizer, epoch, row)
-            if row["map_50"] > best_map: 
+            if row["map_50"] > best_map:
                 best_map = row["map_50"]
                 save_checkpoint(checkpoint_dir / "best.pt", model, optimizer, epoch, row)
-            
+
             print(
-                f"epoch={epoch} loss={train_loss: .4f} "
-                f"mAP@0.5={row['map_50']:.5f}, "
-                f"mAP@0.7={row['map_70']:.4f}, "
-                f"mAP@0.9={row['map_90']:.4f}"
+                f"epoch={epoch} loss={train_loss:.4f} val_loss={val_loss:.4f} "
+                f"mAP@0.5={row['map_50']:.5f} "
+                f"mAP@0.7={row['map_70']:.4f} "
+                f"mAP@0.9={row['map_90']:.4f} "
+                f"lr={current_lr:.2e}"
             )
