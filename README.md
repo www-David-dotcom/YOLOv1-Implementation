@@ -10,6 +10,42 @@ uv sync
 
 Run all commands from the repository root.
 
+## File Structure
+
+```text
+CV_Project3/
+├── configs/
+│   └── yolo_v1_face.yaml        # Dataset, model, training, and eval settings
+├── scripts/
+│   ├── download_widerface.py    # Download and extract WIDER FACE archives
+│   ├── prepare_data.py          # Convert WIDER FACE annotations to YOLO labels
+│   ├── train.py                 # Train the detector
+│   ├── evaluate.py              # Evaluate checkpoints on validation data
+│   ├── infer.py                 # Run inference on one image
+│   └── plot_curves.py           # Plot training history
+├── src/
+│   ├── datasets/                # Dataset loader, transforms, annotation conversion
+│   ├── engine/                  # Training and evaluation loops
+│   ├── inference/               # Prediction decoding
+│   ├── losses/                  # YOLO loss
+│   ├── models/                  # Backbone, head, full YOLO model
+│   └── utils/                   # Boxes, NMS, metrics, config, checkpoints
+├── data/
+│   ├── WIDER_train/             # Raw train images after extraction
+│   ├── WIDER_val/               # Raw validation images after extraction
+│   ├── WIDER_test/              # Raw test images after extraction
+│   ├── wider_face_split/        # Original WIDER FACE annotation text files
+│   └── processed/               # YOLO-format processed images and labels
+├── outputs/
+│   ├── checkpoints/             # Saved model checkpoints
+│   ├── logs/                    # Training CSV logs
+│   ├── predictions/             # Inference visualizations
+│   └── report/                  # Report figures
+├── README.md
+├── report.md
+└── pyproject.toml
+```
+
 ## 1. Download WIDER FACE
 
 Download the train, validation, test, and annotation archives from the Hugging Face dataset repo:
@@ -100,7 +136,7 @@ Run prediction on any image from train, validation, test, or your own image:
 uv run python scripts/infer.py \
   --config configs/yolo_v1_face.yaml \
   --checkpoint outputs/checkpoints/best.pt \
-  --image path/to/image.jpg \
+  --image data/WIDER_test/images/0--Parade/0_Parade_marchingband_1_9.jpg \
   --output outputs/predictions/infer.jpg
 ```
 
