@@ -35,7 +35,7 @@ train:
     log_path: outputs/logs/train_history.csv
 
 eval:
-    conf_threshold: 0.05
+    conf_threshold: 0.2
     nms_iou_threshold: 0.2
     map_iou_thresholds:
         - 0.5
